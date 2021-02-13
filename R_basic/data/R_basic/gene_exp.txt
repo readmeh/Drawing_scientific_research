@@ -1,0 +1,6 @@
+gene_id	sample1	sample2	sample3	sample4
+gene1	3	5	287	41
+gene2	120		33	31
+gene3	39	12	34	33
+gene4	23	22	0	78
+gene5	23	32	49	3

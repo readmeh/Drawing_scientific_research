@@ -1,0 +1,5 @@
+gene_name	annotation
+gene1	aaa
+gene2	bbb
+gene3	ccc
+gene5	ddd
