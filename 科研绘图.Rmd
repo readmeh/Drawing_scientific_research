@@ -1,0 +1,446 @@
+---
+title: "科研绘图"
+author: "hxp"
+date: "2021/2/14"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+Sys.getlocale()
+```
+
+# 学习科研绘图
+
+  使用R语言绘制生信领域科研所使用的图。
+
+## 更改工作目录
+
+```{R}
+
+#老规矩
+rm(list = ls())
+setwd("D://program/R/RSt/Drawing_scientific_research")
+getwd()
+```
+## 安装加载相关R包
+
+```{R message=FALSE, warning=FALSE}
+library(tidyverse)# grid绘图体系
+library(ggforce)# theme相关
+library(paletteer)# 整合了大量颜色相关的包如ggsci
+library(ggsci)# 颜色标度相关
+library(scales)# 显示颜色
+library(RColorBrewer)# 颜色调色盘
+library(ggstar)# 形状标度相关
+library(ggimage)# 可以自己上传图片
+library(ggtext)# 扩展ggplot的文本显示方式
+library(ggThemeAssist)# 可视化ggplot图美化过程
+library(cowplot)
+library(ggthemes)
+library(patchwork)# 拼图包
+library(readxl)
+library(pheatmap)
+library(ggcorrplot)
+library(eoffice)
+```
+
+## 待定
+```{R message=TRUE, warning=TRUE, echo = F}
+# 求相关系数
+
+gene_exp <- read.delim("R_basic/data/R_basic/genes.TMM.EXPR.matrix", row.names = 1)
+
+sample_cor <- gene_exp %>% cor(method = "pearson")
+
+write.csv(sample_cor, file = "sample_cor.csv")
+
+# 进行可视化
+##相关包：pheatmap
+
+
+sample_cor %>% pheatmap()
+
+# 输出到文件中
+ 
+pdf(file = "sample_cor.pdf")
+sample_cor %>% pheatmap()
+dev.off()
+```
+
+## ggplot2快速入门
+
+从diamonds中随机抽取500条数据
+
+```{R}
+# 散点图
+#用于快速熟悉ggplot2绘图体系
+
+## 加载数据
+data("diamonds")
+##设置种子抽样
+set.seed(114514)
+samll.diamands <- sample_n(diamonds, 
+                         size = 500)
+
+## 绘制散点图
+
+### 点应该使用21比较好
+samll.diamands %>% ggplot(mapping = aes(x = carat, y = price)) +
+    geom_point(aes(fill = color, 
+                   size = price), 
+               shape = 21) +
+    scale_color_npg() +# 控制颜色标度(ggsci)
+    #控制大小标度range控制size范围
+    scale_size(range = c(1,10))+
+    theme_classic() +
+    guides(size = "none")# 取消size legend 
+
+## 美化
+samll.diamands %>% ggplot(mapping = aes(x = carat, y = price)) +
+    geom_point(aes(fill = color, 
+                   size = price), 
+               shape = 21) +
+    scale_color_npg() +# 控制颜色标度(ggsci)
+    #控制大小标度range控制size范围
+    scale_size(range = c(1,10))+
+    scale_y_continuous(breaks = c(0,5000, 10000, 15000),
+                       labels = c('0','5k','10k','15k')) +
+    # 添加一些必要的注释：标题 xy轴的含义，图例，
+    labs(
+        title = "data visualization with diamands",
+        subtitle = "process of beautify",
+        x = "weight of the diamands",
+        y = "the US dollars price of the diamands",
+        fill = "quality of the color"
+    ) +
+    theme_classic() +
+    guides(size = "none",# 取消size legend
+           fill = guide_legend(override.aes = list(size = 7))) +
+    theme(axis.title = element_text(size = 15,face = "bold"),
+          plot.title = element_text(family = "serif", 
+                                    size = 25, 
+                                    hjust = 0.5,
+                                    face = "bold.italic"),
+          #这个好像优先级更高相比justification
+          legend.position = c(0.7,0.1),
+          legend.box.background = element_blank(),
+          legend.key = element_rect(fill = "gray100",
+                                    colour = NA)
+          )
+
+### 好用的主题
+p <- samll.diamands %>% ggplot(mapping = aes(x = carat, y = price)) +
+    geom_point(aes(fill = color, 
+                   size = price), 
+               shape = 21) +
+    scale_color_npg() +# 控制颜色标度(ggsci)
+    #控制大小标度range控制size范围
+    scale_size(range = c(1,10))+
+    scale_y_continuous(breaks = c(0,5000, 10000, 15000),
+                       labels = c('0','5k','10k','15k')) +
+    # 添加一些必要的注释：标题 xy轴的含义，图例，
+    labs(
+        title = "data visualization with diamands",
+        subtitle = "process of beautify",
+        x = "weight of the diamands",
+        y = "the US dollars price of the diamands",
+        fill = "quality of the color"
+    ) +
+    guides(size = "none",# 取消size legend
+           fill = guide_legend(override.aes = list(size = 7))) +
+    theme(axis.title = element_text(size = 15,face = "bold"),
+          plot.title = element_text(family = "serif", 
+                                    size = 25, 
+                                    hjust = 0.5,
+                                    face = "bold.italic"),
+          legend.direction =  "horizontal",
+          #这个好像优先级更高相比justification
+          legend.position = c(0.7,0.1),
+          legend.justification = c(0.1,0.7),
+          legend.background = element_blank(),
+          legend.box.background = element_blank(),
+          legend.key = element_rect(colour = NA, fill = NA))
+
+p1 <- p + theme_bw()
+p2 <- p + theme_few()
+p3 <- p + theme_test()
+p4 <- p + theme_half_open()
+p5 <- p + theme_classic()
+p6 <- p + theme_cowplot()
+p7 <- p + theme_void()
+p8 <- p + theme_nothing()
+p9 <- p + theme_minimal()
+p10 <- p + theme_minimal_hgrid()
+p11 <- p + theme_minimal_vgrid()
+p12 <- p + theme_minimal_grid()
+p1+p2+p3+p4+p5+p6+p7+p8+p9+
+  plot_annotation(tag_levels = 'A')+plot_layout(guides = "collect")
+
+### 颜色搭配
+####使用调色板
+####RcolorBrewer
+#####离散色
+display.brewer.all()
+display.brewer.pal(name = 'Spectral',11)
+
+pcol <- samll.diamands %>% sample_n(100) %>% 
+  ggplot(mapping = aes(x = carat, y = price)) +
+    geom_point(aes(fill = color, 
+                   size = price), 
+               shape = 21) +
+    #控制大小标度range控制size范围
+    scale_size(range = c(1,10))+
+    scale_y_continuous(breaks = c(0,5000, 10000, 15000),
+                       labels = c('0','5k','10k','15k')) +
+    # 添加一些必要的注释：标题 xy轴的含义，图例，
+    labs(
+        title = "data visualization with diamands",
+        subtitle = "process of beautify",
+        x = "weight of the diamands",
+        y = "the US dollars price of the diamands",
+        fill = "quality of the color"
+    ) +
+    guides(size = "none",# 取消size legend
+           fill = guide_legend(override.aes = list(size = 7))) +
+  theme_minimal_grid() +
+    theme(axis.title = element_text(size = 15,face = "bold"),
+          plot.title = element_text(family = "serif", 
+                                    size = 25, 
+                                    hjust = 0.5,
+                                    face = "bold.italic"),
+          plot.background = element_rect(fill = '#f0f4fa'),
+          legend.direction =  "horizontal",
+          #这个好像优先级更高相比justification
+          legend.position = c(0.7,0.1),
+          legend.justification = c(0.1,0.7),
+          legend.background = element_blank(),
+          legend.box.background = element_blank(),
+          legend.key = element_rect(colour = NA, fill = NA))
+pcol + scale_fill_brewer(palette = "Set3")
+pcol + scale_fill_d3()
+##### 连续色
+pcol1 <- samll.diamands %>% sample_n(100) %>% 
+  ggplot(mapping = aes(x = carat, y = price)) +
+    geom_point(aes(fill = carat, 
+                   size = price), 
+               shape = 21) +
+    #控制大小标度range控制size范围
+    scale_size(range = c(1,10))+
+    scale_y_continuous(breaks = c(0,5000, 10000, 15000),
+                       labels = c('0','5k','10k','15k')) +
+    # 添加一些必要的注释：标题 xy轴的含义，图例，
+    labs(
+        title = "data visualization with diamands",
+        subtitle = "process of beautify",
+        x = "weight of the diamands",
+        y = "the US dollars price of the diamands"
+    ) +
+    guides(size = "none"# 取消size legend
+           ) +
+  theme_minimal_grid() +
+    theme(axis.title = element_text(size = 15,face = "bold"),
+          plot.title = element_text(family = "serif", 
+                                    size = 25, 
+                                    hjust = 0.5,
+                                    face = "bold.italic"),
+          plot.background = element_rect(fill = '#f0f4fa'),
+          legend.direction =  "horizontal",
+          #这个好像优先级更高相比justification
+          legend.position = c(0.7,0.1),
+          legend.justification = c(0.1,0.7),
+          legend.background = element_blank(),
+          legend.box.background = element_blank(),
+          legend.key = element_rect(colour = NA, fill = NA))
+pcol1 + scale_fill_gsea()
+pcol1 + scale_fill_gradient(low = "#fbfbfd", 
+                            high = "#f16913")#太丑了仅作示例
+#pcol1 + scale_fill_gradient2(low = "",
+#                             mid = "",
+#                             high = "",
+#                             midpoint = 1.5)
+
+# 气泡图
+
+## 加载数据
+data("mtcars")
+
+##绘图
+
+mtcars %>% ggplot(aes(mpg,wt)) +
+    geom_point(aes(size = disp, 
+                   fill = factor(cyl)), 
+               shape = 21,
+               alpha = 0.5) +
+    scale_size(range = c(9,20)) +
+    scale_color_npg() +
+    guides(
+        #更改图例中图标的大小
+        #链接：https://stackoverflow.com/questions/16356052/control-ggplot2-legend-look-without-affecting-the-plot
+        fill = guide_legend(override.aes = list(size = 10)),
+        # 取消size的图例
+        size = "none"
+    ) +
+    theme_minimal() +
+    theme()
+
+
+```
+
+## pca图
+
+```{R}
+# 安装pca包
+library(PCAtools)
+
+#加载数据
+gene_exp <- read.table(
+  file = 'plot_training_20200701/data/rnaseq-apple/gene_exp.txt', 
+  sep = '\t', 
+  header = T, 
+  row.names = 1)
+
+sample_info <- read.table(
+  file = 'plot_training_20200701/data/rnaseq-apple/sample_info.txt', 
+  sep = '\t', 
+  header = T, 
+  row.names = 1)
+
+# 计算pca数据
+sample_pca <- pca(gene_exp)
+
+pca_rotated <- sample_pca[["rotated"]]
+
+sample_info <- sample_info %>% rownames_to_column(var = "sample_name")
+
+pca_rotated <- pca_rotated %>% 
+  rownames_to_column(var = "sample_name") %>% 
+  left_join(sample_info, by = "sample_name")
+
+# 绘图
+
+## 简单绘制
+pca_rotated %>% 
+  ggplot(aes(PC1,PC2)) +
+  geom_point(
+      aes(fill = stage, shape = strain), 
+      size = 8,
+      alpha = 0.5,
+    ) +
+  scale_shape_manual(values = 21:22) +
+  scale_fill_npg() +
+  scale_color_npg() +
+  guides(fill = guide_legend(override.aes = list(shape = 21))) +
+  theme_half_open()
+
+## 加置信椭圆
+pca_rotated %>% 
+  ggplot(aes(PC1,PC2)) +
+  geom_point(
+      aes(fill = stage, shape = strain), 
+      size = 8,
+      alpha = 0.5,
+    ) +
+  stat_ellipse(aes(color = stage)) +
+  scale_shape_manual(values = 21:22) +
+  scale_fill_npg() +
+  scale_color_npg() +
+  guides(fill = guide_legend(override.aes = list(shape = 21))) +
+  theme_half_open()
+  
+## 美化
+pca_rotated %>% 
+  ggplot(aes(PC1,PC2)) +
+  geom_point(
+      aes(fill = stage, shape = strain), 
+      size = 8,
+      alpha = 0.5,
+    ) +
+  stat_ellipse(aes(color = stage),size = 1.1) +
+  geom_text_repel(aes(label = sample_name),max.overlaps = 50) +
+  scale_shape_manual(values = 21:22) +
+  scale_fill_npg() +
+  scale_color_npg() +
+  guides(fill = guide_legend(override.aes = list(shape = 21))) +
+  labs(
+    title = "PC1 vs PC2"
+    ) +
+  theme_half_open() +
+  theme(
+      legend.box.background = element_blank(),
+      legend.position = c(0.2,0.7),
+      legend.direction = "horizontal",
+      #legend.background = element_rect(color = "black")#怎么在整个图例外加边框以及边框的大小
+    )
+
+# 落石图
+
+##数据清洗
+variance <- sample_pca[["variance"]] %>% 
+  data.frame(data1 = .) %>% 
+  #rename('sample_pca...variance...' = a) %>% 
+  rownames_to_column() %>% 
+  separate(col = 'rowname',
+             into = c('str1','num1'),
+             sep = 2,
+             remove = F) %>% 
+  mutate(num1 = as.numeric(num1)) %>%
+  mutate(data2 = cumsum(data1)) %>% 
+  arrange(num1) %>%tibble()
+
+variance$rowname <- factor(
+  variance$rowname,
+  levels=paste0("PC",1:24),
+  ordered = TRUE)
+
+
+variance %>% 
+  ggplot(aes(x= rowname,y = data1)) +
+  geom_bar(stat = "identity",fill = '#1f4e82') +
+  geom_point(aes(y = data2)) +
+  geom_text_repel(aes(x = rowname,y = data2, label = round(data2,2)),max.overlaps = 500) +
+  geom_line(aes(x = num1,y = data2),color = 'red') +
+  coord_cartesian(ylim = c(0,110),expand = 0) +
+  theme_half_open() +
+  theme(plot.background = element_rect(fill = "gray90"))
+```
+
+## 火山图
+
+```{R warning=FALSE}
+
+# 载入数据
+de_result <- read_excel("plot_training_20200701/data/vocano/de_result.xlsx", 
+    col_types = c("numeric", "text", "text", 
+        "text", "text", "numeric", "numeric", 
+        "numeric", "numeric", "text", "text", 
+        "text", "text", "text", "text", "text", 
+        "text", "text"))
+
+de_result %>%
+  mutate(padj = replace_na(padj, 1)) %>% 
+  mutate(
+    direction = ifelse(padj > 0.05 | abs(log2FoldChange) < 1, 
+                            "non_significant",
+                            ifelse(log2FoldChange >1,
+                                   "up_regulated",
+                                   "down_regulated")))%>% 
+  ggplot(aes(log2FoldChange,-log10(padj))) +
+  geom_point(aes(color = direction),
+             size = 3,
+             alpha = 0.8,
+             show.legend = F) +
+  geom_hline(yintercept = -log10(0.05),
+             linetype = "dotdash",
+             color = "gray30") +
+  geom_vline(xintercept = c(-1,1),
+             linetype = "dotdash",
+             color = "gray30") +
+  coord_cartesian(ylim = c(0,50)) +
+  scale_color_manual(values = c("#1400ff","#a8a8a8","#ff0102")) +
+  theme_half_open()
+```
+
+## 

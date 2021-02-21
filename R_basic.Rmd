@@ -1,0 +1,54 @@
+---
+title: "R_basic"
+author: "hxp"
+date: "2021/2/16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R语言的各种更新
+
+```{R}
+#更新R版本
+
+## 查看R版本
+
+R.version
+# or
+getRversion()
+
+## 更新R版本
+
+install.packages("installr")
+library(installr)
+updateR()
+
+# 更新R包
+
+## 查看R包版本
+
+packageVersion("mypackage")
+
+?update.packages
+update.packages()
+# or
+install.packages("rvcheck")
+library(rvcheck)
+?update_all
+update_all()
+```
+
+##各种error
+
+###出现编译错误 ERROR: compilation failed for package 'mypackage'
+
+可以尝试将原先的 
+`install.packages("Hmisc")` 
+改为
+`install.packages("Hmisc", type="binary")`
+
+
+
